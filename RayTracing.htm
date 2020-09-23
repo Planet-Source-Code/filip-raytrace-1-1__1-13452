@@ -1,0 +1,56 @@
+<HTML>
+<HEAD>
+<TITLE>Ray tracing information</TITLE>
+</HEAD>
+<BODY>
+<FONT face="Arial Black"><CENTER><H1>Ray Tracing</H1></CENTER></FONT>
+<FONT face="Verdana"><BR><BR><H2>Introduction</H2><BR>
+Ray tracing is a technique that traces a <I>ray</I> from the <I>center of projection</I> (the eye) trough a pixel. Then it follows the ray into the 3D scene until it strikes an object. It then uses the geometry of that object and the position and brightness of the light sources to determine the pixels color.<BR><BR>
+Using this single algorithm, ray tracing handles:<BR><BR>
+1. Ambient light<BR>
+2. Diffuse reflection<BR>
+3. Specular reflection<BR>
+4. Hidden surface removal<BR>
+5. Smooth shading of curved surfaces (spheres, cylinders)<BR>
+6. Shadows<BR>
+7. Mutually overlapping objects<BR>
+8. Objects that pierce other objects<BR><BR><BR>
+<H2>Sphere geometry explanation</H2><BR>
+The center of projection is at (cx, cy, cz), and the pixel is at (px, py, pz). The vector leading through the pixel coming from the center of projection then has components [px-cx, py-cy, pz-cz].<BR>
+The points along this ray have coordinates given by (cx, cy, cz)+t*[px-cx, py-cy, pz-cz] for different values of t. For example, the X coordinate of a point on the ray is given by:<BR><BR><CODE> cx + t * (px - cx)</CODE><BR><BR>where t>=0. Values of t less than zero correspond to points behind the center of projection, so you can't see them.<BR><BR>
+To find the point where the ray intersects the nearest object, the program can calculate t for the point of intersection with each object. It then takes the intersection with the smallest positive value for t.<BR><BR>
+You can create a FindT function for each object, wich returns the smallest positive value for t.<BR><BR>
+For example, the equation for a sphere centered at position (cx, cy, cz) is:<BR><BR><CODE> (cx - x)^2 + (cy - y)^2 + (cz - z)^2 - radius^2 = 0</CODE><BR><BR>
+You can write the equation of a line through point p along the vector v using <I>parametric equations</I> (functions like X(t), Y(t), Z(t)) like this:<BR><BR><CODE> X(t) = px + t * vx<BR> Y(t) = py + t * vy<BR> Z(t) = pz + t * vz</CODE><BR><BR>
+If you substitute these values into the equation for the sphere, you get:<BR><BR><CODE> (cx - px + t * vx)^2 + (cy - py + t * vy)^t + (cz - pz + t * vz)^2 - radius^2 = 0</CODE><BR><BR>
+After rearranging this, you get:<BR><BR><CODE> A * t^2 + B * t + C = 0</CODE><BR><BR>
+Where:<BR><BR><CODE> A = vx^2 + vy^2 + vz^2<BR>
+ B = 2 * vx * (px - cx) +<BR>
+ 2 * vy * (py - cy) +<BR>
+ 2 * vz * (pz - cz)<BR>
+ C = cx^2 + cy^2 + cz^2 +<BR>
+ px^2 + py^2 + pz^2 -<BR>
+ 2 * (cx * px + cy * py + cz * pz) - radius^2</CODE><BR><BR>
+The solutions to this equation are given by the quadratic formula as:<BR><BR><CODE> t = -B +/- Sqr(B^2 - 4 * A * C) / 2 / A</CODE><BR><BR>
+If B^2 - 4 * A * C < 0, the square root has no solutions. Then the ray does not intersect the sphere.<BR><BR>
+If B^2 - 4 * A * C = 0, the equation has one solution, -B/2/A.<BR><BR>
+If B^2 - 4 * A * C > 0, the equation has two solutions. Use the smallest value. For further explanation, see the code.
+<BR><BR><H3>Finding hit color</H3><BR>
+If you have detected the smallest t value you can calculate the hit color. For this, you need to know something called the <I>surface normal</I>. This is a vector perpendicular to the surface. By a sphere, this vector is given by:<BR><BR><CODE> [px - cx, py - cy, pz - cz]</CODE><BR><BR>where p is the point on the sphere and c is the center of the sphere. <BR>
+Before you can calculate the hit color, you must <I>normalize</I> this vector. This is a process making sure that the length of the vector = 1. First, calculate the current length. This is simple. The length is given by vx^2 + vy^2 + vz^2. Second, divide the components of the vector by the length of it. Then you can call the CalculateHitColor subroutine to calculate the hit color.
+<BR><BR><H2>Lighting model</H2><BR>
+The lighting function for ray tracing is:<BR><BR><CODE> I = Ia * Ka + Ii * (Kd * (L . N) + Ks * (R . V)^n)</CODE><BR><BR>
+Where:<BR><BR>I = the total intensity<BR>
+Ia = the intensity of the ambient light<BR>
+Ka = the reflecting value of ambient light<BR>
+Ii = the intensity of the light source<BR>
+Kd = the diffuse reflection value<BR>
+L = a vector from the surface to the light source<BR>
+N = the normal vector<BR>
+Ks = the specular reflection value<BR>
+R = a vector from the surface at the mirror direction of the vector L (the reflection vector)<BR>
+V = a vector from the surface to the viewpoint<BR>
+n = the specular constant<BR>
+</FONT>
+</BODY>
+</HTML>
